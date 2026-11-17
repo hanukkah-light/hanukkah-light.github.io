@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>הפנימיות של חנוכה · לימוד לשמונת הנרות</title>
+<meta name="description" content="לימוד קצר לכל אחד משמונת לילות חנוכה, על האור הפנימי שבכל אחד ואחת מאיתנו. מתוך החוברת של הרב אליהו עובדיה ונעמה ניימן, לעילוי נשמת הגיבור שלמה אביעד ניימן הי״ד ולכל חללי צה״ל.">
+<meta name="theme-color" content="#0d1324">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="he_IL">
+<meta property="og:site_name" content="הפנימיות של חנוכה">
+<meta property="og:title" content="הפנימיות של חנוכה · לימוד לשמונת הנרות">
+<meta property="og:description" content="לימוד לכל ערב בחנוכה, על האור שבתוכנו. לעילוי נשמת הגיבור שלמה אביעד ניימן הי״ד ולכל חללי צה״ל.">
+<meta property="og:url" content="https://80m80m-byte.github.io/hanukkah-light/">
+<meta property="og:image" content="https://80m80m-byte.github.io/hanukkah-light/img/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="חנוכייה דולקת ושם האתר: הפנימיות של חנוכה">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="img/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&family=Frank+Ruhl+Libre:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<a class="skip" href="#main">דילוג לתוכן</a>
+
+<header class="topbar" id="topbar">
+  <div class="topbar__in">
+    <a class="brand" href="#" data-route="home" aria-label="הפנימיות של חנוכה, לעמוד הבית">
+      <svg class="brand__flame" viewBox="0 0 20 28" aria-hidden="true"><path d="M10 1C14 7 17 11 17 17a7 7 0 0 1-14 0c0-4 2-6 3-8 1 3 2 4 3 4 0-4 0-8 1-12z" fill="currentColor"/></svg>
+      <span>הפנימיות של חנוכה</span>
+    </a>
+    <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="nav"><span class="sr">תפריט</span><span class="menu-btn__bars" aria-hidden="true"></span></button>
+    <nav class="nav" id="nav" aria-label="ניווט ראשי">
+      <a href="#nights">שמונת הנרות</a>
+      <a href="#aviad">לעילוי נשמת אביעד</a>
+      <a href="#shirim">שירי החוברת</a>
+      <a href="#hakdashot">הקדשות</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" tabindex="-1">
+  <div class="loading" id="loading" role="status">טוען…</div>
+  <div id="view"></div>
+</main>
+
+<footer class="site-foot" id="siteFoot" hidden></footer>
+
+<!-- Music player -->
+<section class="player" id="player" aria-label="נגן שירי חנוכה">
+  <div class="drawer" id="drawer" aria-hidden="true">
+    <div class="drawer__head">
+      <h2 class="drawer__title">שירים לחנוכה</h2>
+      <button class="icon-btn" id="drawerClose" aria-label="סגירת רשימת השירים"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="drawer__video"><div id="ytHost"></div><div class="drawer__poster" id="ytPoster">הנגן ייטען עם לחיצה על ניגון</div></div>
+    <ol class="tracks" id="tracks"></ol>
+  </div>
+  <div class="bar">
+    <button class="play" id="playBtn" aria-label="ניגון"><svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg><svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg></button>
+    <button class="bar__info" id="barInfo" aria-label="פתיחת רשימת השירים" aria-expanded="false" aria-controls="drawer">
+      <span class="bar__label" id="barLabel">שירים לחנוכה</span>
+      <span class="bar__track" id="barTrack">ארבע בבות</span>
+    </button>
+    <button class="icon-btn" id="nextBtn" aria-label="השיר הבא"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 6v12M6 6l8 6-8 6z"/></svg></button>
+    <button class="icon-btn" id="prevBtn" aria-label="השיר הקודם"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 6v12M18 6l-8 6 8 6z"/></svg></button>
+    <button class="icon-btn" id="listBtn" aria-label="רשימת השירים" aria-expanded="false" aria-controls="drawer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg></button>
+  </div>
+</section>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
