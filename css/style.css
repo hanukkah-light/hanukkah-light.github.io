@@ -68,7 +68,7 @@ button{font:inherit;color:inherit}
 .hero{overflow:hidden;background:
   radial-gradient(ellipse 60% 55% at 30% 46%, rgba(255,184,90,.13), transparent 70%),
   linear-gradient(180deg,var(--ink-950) 0%,var(--ink-900) 55%,#1b1a27 100%)}
-.hero__in{display:grid;grid-template-columns:1fr;gap:1.5rem;padding:2.6rem 0 3rem}
+.hero__in{display:grid;grid-template-columns:1fr;gap:1.35rem;padding:2.2rem 0 calc(var(--player-h) + 28px)}
 .hero h1{font-family:var(--serif);font-weight:900;font-size:clamp(2.9rem,12.5vw,5.6rem);line-height:.98;margin:0;letter-spacing:-.01em;color:#f7efe0}
 .hero h1 .thin{display:block;font-weight:400;font-size:.42em;letter-spacing:0;color:var(--on-dark-2);margin-bottom:.55rem;line-height:1.2}
 .hero__authors{font-family:var(--sans);color:var(--on-dark-2);font-size:.98rem;margin:1.1rem 0 0}
@@ -76,14 +76,22 @@ button{font:inherit;color:inherit}
 .hero__ded a{text-decoration:none;color:inherit}
 .hero__ded a:hover{color:var(--gold-soft)}
 .hero__ded small{display:block;color:var(--on-dark-3);font-family:var(--sans);font-size:.85rem;margin-top:.2rem}
+.hero__opening{margin:1.7rem 0 0;padding:1.15rem 0 0;border-top:1px solid rgba(230,205,146,.28);max-width:28rem}
+.hero__opening p{margin:0;font-family:var(--serif);font-weight:400;font-size:clamp(1.12rem,3.6vw,1.38rem);line-height:1.65;color:#efe6d4}
+.hero__opening p.hero__opening-end{margin-top:.75rem;color:var(--gold-soft);font-weight:500}
+
 .hero__art{position:relative;margin-inline:-.5rem}
 .hero__cap{font-family:var(--sans);font-size:.82rem;color:var(--on-dark-3);text-align:center;margin:.2rem 0 0}
 .hero__in .status{margin-top:.4rem}
 @media (min-width:900px){
-  .hero__in{grid-template-columns:1.05fr 1fr;grid-template-rows:auto auto;column-gap:4rem;row-gap:0;align-items:end;padding:5rem 0 4.5rem;min-height:min(80vh,740px)}
+  .hero__in{grid-template-columns:1.05fr 1fr;grid-template-rows:auto auto;column-gap:4rem;row-gap:0;align-items:end;padding:3.2rem 0 calc(var(--player-h) + 2.6rem);min-height:0}
   .hero__text{grid-column:1;grid-row:1}
-  .hero__in .status{grid-column:1;grid-row:2;align-self:start;margin-top:2rem}
+  .hero__in .status{grid-column:1;grid-row:2;align-self:start;margin-top:1.15rem}
   .hero__art{grid-column:2;grid-row:1 / span 2;align-self:center}
+  .hero .hero__authors{margin-top:.85rem}
+  .hero .hero__ded{margin-top:1.2rem}
+  .hero .hero__opening{margin-top:1.3rem;padding-top:.95rem}
+  .hero .status{padding-top:1rem}
 }
 
 /* status block */

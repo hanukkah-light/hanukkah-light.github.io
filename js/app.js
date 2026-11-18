@@ -571,6 +571,17 @@
     return (C.book_songs_lyrics || []).filter(function (p) { return strip(p.title) === strip(title); })[0];
   }
 
+  function openingHTML() {
+    var raw = C && C.opening;
+    if (!raw) return '';
+    var lines = Array.isArray(raw) ? raw.slice() : String(raw).split(/\n/);
+    lines = lines.map(function (l) { return String(l).trim(); }).filter(Boolean);
+    if (!lines.length) return '';
+    var last = lines[lines.length - 1];
+    var body = lines.slice(0, -1).map(function (ln) { return esc(ln); }).join('<br>');
+    return '<blockquote class="hero__opening"><p>' + body + '</p><p class="hero__opening-end">' + esc(last) + '</p></blockquote>';
+  }
+
   function homeView() {
     var lit = T.phase === 'during' ? T.night : T.phase === 'after' ? 8 : 0;
     var ded = C.dedication || {};
@@ -597,6 +608,7 @@
           '<h1 id="h-title" tabindex="-1">הפנימיות של חנוכה</h1>' +
           '<p class="hero__authors">' + esc((C.credits && C.credits.authors || ['הרב אליהו עובדיה', 'נעמה ניימן']).join(' · ')) + '</p>' +
           '<p class="hero__ded"><a href="#aviad">' + esc(ded.title || '') + '<small>' + esc(stripIdf(ded.idf_fallen)) + '</small></a></p>' +
+          openingHTML() +
         '</div>' +
         '<div class="hero__art">' + menorahSVG(lit, { interactive: true, shamash: true }) +
           '<p class="hero__cap">לחצו על נר כדי לפתוח את הלימוד שלו</p></div>' +
