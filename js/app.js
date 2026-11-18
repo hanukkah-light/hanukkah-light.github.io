@@ -28,6 +28,20 @@
       .replace(/([\u05D0-\u05EA])'(?=[\u05D0-\u05EA]{2,})/g, '$1\u05F3')
       .replace(/(^|[\s(\[])([\u05D0-\u05EA]{1,2})'(?=[\s.,:;!?)\]]|$)/g, '$1$2\u05F3');
   }
+  function applyGender(input, gender) {
+    function pick(m, f, pl) {
+      if (gender === 'female') return f;
+      if (gender === 'male') return m;
+      return (pl != null && pl !== '') ? pl : m;
+    }
+    return String(input == null ? '' : input).replace(/\{g:([^}|]*)\|([^}|]*)\|([^}]*)\}/g, function (_, m, f, pl) {
+      return pick(m, f, pl);
+    });
+  }
+  function currentGender() {
+    var p = getProfile();
+    return (p && p.gender) || '';
+  }
   function paras(v) {
     if (v == null || v === '') return [];
     var arr = Array.isArray(v) ? v : [v];
@@ -39,11 +53,12 @@
     return out;
   }
   function P(v, cls) {
+    var g = currentGender();
     return paras(v).map(function (p) {
-      return '<p' + (cls ? ' class="' + cls + '"' : '') + '>' + esc(p).replace(/\n/g, '<br>') + '</p>';
+      return '<p' + (cls ? ' class="' + cls + '"' : '') + '>' + esc(applyGender(p, g)).replace(/\n/g, '<br>') + '</p>';
     }).join('');
   }
-  function txt(v) { return paras(v).join(' '); }
+  function txt(v) { return applyGender(paras(v).join(' '), currentGender()); }
 
   /* ---------------- dates ---------------- */
   // date-only values are 'YYYY-MM-DD' strings handled in UTC to avoid DST issues
@@ -1000,5 +1015,5 @@
   else fetch('content.json', { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(start).catch(fallback);
 
   // expose for testing
-  window.__hanukkah = { timeState: function () { return T; }, computeFirstCandle: computeFirstCandle, getProfile: getProfile, saveProfile: saveProfile, eventPayload: eventPayload, postEvent: postEvent, enterSite: enterSite, SITE_ORIGIN: SITE_ORIGIN };
+  window.__hanukkah = { timeState: function () { return T; }, computeFirstCandle: computeFirstCandle, getProfile: getProfile, saveProfile: saveProfile, eventPayload: eventPayload, postEvent: postEvent, enterSite: enterSite, SITE_ORIGIN: SITE_ORIGIN, menorahSVG: menorahSVG, bindMenorah: bindMenorah, applyGender: applyGender };
 })();

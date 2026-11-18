@@ -32,8 +32,21 @@
     var x = fnv(String(seed) + '|' + salt);
     return arr[x % arr.length];
   }
-  function you(gender, male, female) {
-    return gender === 'female' ? female : male;
+  function applyGender(input, gender) {
+    function pick(m, f, pl) {
+      if (gender === 'female') return f;
+      if (gender === 'male') return m;
+      return (pl != null && pl !== '') ? pl : m;
+    }
+    return String(input == null ? '' : input).replace(/\{g:([^}|]*)\|([^}|]*)\|([^}]*)\}/g, function (_, m, f, pl) {
+      return pick(m, f, pl);
+    });
+  }
+  function G(s, gender) { return applyGender(s, gender); }
+  function you(gender, male, female, plural) {
+    if (gender === 'female') return female;
+    if (gender === 'male') return male;
+    return (plural != null && plural !== '') ? plural : male;
   }
 
   function optionByIndex(q, idx) {
@@ -65,17 +78,17 @@
     return cands[fnv(seed) % cands.length];
   }
 
-  function resultSeed(name, answers, birth, gender) {
-    return [name || '', answers.join(','), birth || '', gender || ''].join('|');
+  function resultSeed(name, answers, birth) {
+    return [name || '', answers.join(','), birth || ''].join('|');
   }
 
   function compose(profile, answers, candle, gender, birth) {
     var quiz = Q();
     var night = (deps.content.nights || [])[candle - 1] || {};
     var pack = (quiz.results || {})[candle] || { openings: [], light: [] };
-    var seed = resultSeed(profile && profile.name, answers, birth, gender);
+    var seed = resultSeed(profile && profile.name, answers, birth);
     var name = (profile && profile.name) || '';
-    var ata = you(gender, 'אתה', 'את');
+    var ata = you(gender, 'אתה', 'את', 'אתם');
     var ord = (quiz.ordinals || ORD)[candle - 1] || String(candle);
     var titleLine = name
       ? (name + ', ' + ata + ' הנר ' + ord + ' – ' + (night.title || ''))
@@ -119,7 +132,9 @@
     if (occ) extra.push(pick(quiz.weave_occupation || [], seed, 'occ').replace(/\{occupation\}/g, occ));
     if (lt) extra.push(pick(quiz.weave_light || [], seed, 'lt').replace(/\{light\}/g, lt));
 
-    var parts = [opening, light, insert, birthLine, around].concat(extra).filter(Boolean);
+    var parts = [opening, light, insert, birthLine, around].concat(extra).filter(Boolean).map(function (p) {
+      return G(p, gender);
+    });
     return {
       candle: candle,
       title: night.title || '',
@@ -144,23 +159,32 @@
     return '<svg class="quiz-mark" viewBox="0 0 36 28" aria-hidden="true"><path d="M12 5C15 10 17 13 17 17.5a5.2 5.2 0 1 1-10.4 0c0-3.2 1.5-5 2.3-6.6.7 2.2 1.5 3.1 2.3 3.1 0-3 0-6.2.8-9z" fill="currentColor" opacity=".5"/><path d="M26 1C30 7 33 11 33 17a7 7 0 0 1-14 0c0-4 2-6 3-8 1 3 2 4 3 4 0-4 0-8 1-12z" fill="currentColor"/></svg>';
   }
 
+  function menorahArt() {
+    var api = w.__hanukkah;
+    if (api && api.menorahSVG) return api.menorahSVG(8, { shamash: true, label: 'חנוכייה דולקת' });
+    return '';
+  }
+
   function introHTML() {
     var q = Q();
     var g = state.gender;
     return '<section class="quiz quiz--intro" aria-labelledby="quiz-h">' +
-      '<div class="quiz__in">' +
-        '<p class="quiz__brand">' + markSVG() + esc(q.intro_kicker || 'הפנימיות של חנוכה') + '</p>' +
-        '<h1 id="quiz-h">' + esc(q.intro_title || 'בכל אחד דולק נר אחר.') + '</h1>' +
-        '<p class="quiz__lead">' + esc(q.intro_line || 'גלו איזה נר אתם.') + '</p>' +
-        (q.intro_sub ? '<p class="quiz__sub">' + esc(q.intro_sub) + '</p>' : '') +
-        '<div class="quiz-gender">' +
-          '<p class="quiz-gender__lab">' + esc(q.gender_label || 'לפנות אליך בלשון:') + '</p>' +
-          '<div class="quiz-gender__row" role="group">' +
-            '<button type="button" class="quiz-chip' + (g === 'male' ? ' is-on' : '') + '" data-gender="male">' + esc(q.gender_male || 'זכר') + '</button>' +
-            '<button type="button" class="quiz-chip' + (g === 'female' ? ' is-on' : '') + '" data-gender="female">' + esc(q.gender_female || 'נקבה') + '</button>' +
+      '<div class="quiz-intro-layout">' +
+        '<div class="quiz__in">' +
+          '<p class="quiz__brand">' + markSVG() + esc(q.intro_kicker || 'הפנימיות של חנוכה') + '</p>' +
+          '<h1 id="quiz-h">' + esc(G(q.intro_title || 'בכל אחד דולק נר אחר.', g)) + '</h1>' +
+          '<p class="quiz__lead">' + esc(G(q.intro_line || 'גלו איזה נר אתם.', g)) + '</p>' +
+          (q.intro_sub ? '<p class="quiz__sub">' + esc(G(q.intro_sub, g)) + '</p>' : '') +
+          '<div class="quiz-gender">' +
+            '<p class="quiz-gender__lab">' + esc(q.gender_label || 'לפנות אליך בלשון:') + '</p>' +
+            '<div class="quiz-gender__row" role="group">' +
+              '<button type="button" class="quiz-chip' + (g === 'male' ? ' is-on' : '') + '" data-gender="male">' + esc(q.gender_male || 'זכר') + '</button>' +
+              '<button type="button" class="quiz-chip' + (g === 'female' ? ' is-on' : '') + '" data-gender="female">' + esc(q.gender_female || 'נקבה') + '</button>' +
+            '</div>' +
           '</div>' +
+          '<button class="btn btn--flame" type="button" id="quizStart">' + esc(q.start || 'גילוי הנר שלי') + '</button>' +
         '</div>' +
-        '<button class="btn btn--flame" type="button" id="quizStart"' + (g ? '' : ' disabled') + '>' + esc(q.start || 'התחלה') + '</button>' +
+        '<div class="quiz-intro__art">' + menorahArt() + '</div>' +
       '</div></section>';
   }
 
@@ -169,23 +193,26 @@
     var q = qz[state.qi];
     if (!q) return '';
     var opts = (q.options || []).map(function (o, i) {
-      return '<button type="button" class="quiz-opt" data-opt="' + i + '"><span>' + esc(o.label) + '</span></button>';
+      return '<button type="button" class="quiz-opt" data-opt="' + i + '"><span>' + esc(G(o.label, state.gender)) + '</span></button>';
     }).join('');
     return '<section class="quiz quiz--q" aria-labelledby="quiz-qh">' +
       '<div class="quiz__in">' +
         progressHTML(state.qi, qz.length) +
-        '<h1 id="quiz-qh">' + esc(q.text) + '</h1>' +
+        '<h1 id="quiz-qh">' + esc(G(q.text, state.gender)) + '</h1>' +
         '<div class="quiz-opts">' + opts + '</div>' +
       '</div></section>';
   }
 
   function formHTML() {
     var q = Q();
+    var g = state.gender;
+    var lightLab = G('איזה אור {g:אתה מפיץ|את מפיצה|אתם מפיצים} בעולם, {g:סביבך|סביבך|סביבכם}?', g);
+    var legal = G('הפרטים נשמרים אצלנו רק לצורך הלימוד והתכנים ש{g:ביקשת|ביקשת|ביקשתם} לקבל, ואינם מועברים הלאה.', g);
     return '<section class="quiz quiz--form" aria-labelledby="quiz-ready">' +
       '<div class="quiz__in">' +
         '<p class="quiz__brand">' + markSVG() + '</p>' +
-        '<h1 id="quiz-ready">' + esc(q.ready || 'התוצאה שלך מוכנה ✦') + '</h1>' +
-        '<p class="quiz__sub">' + esc(q.ready_sub || '') + '</p>' +
+        '<h1 id="quiz-ready">' + esc(G(q.ready || 'התוצאה שלך מוכנה ✦', g)) + '</h1>' +
+        '<p class="quiz__sub">' + esc(G(q.ready_sub || '', g)) + '</p>' +
         '<form class="welcome__form quiz-form" id="welcomeForm" novalidate>' +
           '<label class="field">שם פרטי <span class="req">*</span>' +
             '<input name="name" type="text" required autocomplete="given-name" maxlength="80">' +
@@ -202,11 +229,11 @@
           '<label class="field">מה העיסוק שלך? <span class="opt">(רשות)</span>' +
             '<input name="occupation" type="text" maxlength="120" autocomplete="organization-title">' +
           '</label>' +
-          '<label class="field">איזה אור אתם מפיצים בעולם, סביבכם? <span class="opt">(רשות)</span>' +
+          '<label class="field">' + esc(lightLab) + ' <span class="opt">(רשות)</span>' +
             '<input name="light" type="text" maxlength="160">' +
           '</label>' +
           '<label class="check"><input name="consent" type="checkbox"><span>אשמח לקבל עדכונים, לימודים ותכנים נוספים</span></label>' +
-          '<p class="gate-card__legal">הפרטים נשמרים אצלנו רק לצורך הלימוד והתכנים שביקשתם לקבל, ואינם מועברים הלאה.</p>' +
+          '<p class="gate-card__legal">' + esc(legal) + '</p>' +
           '<p class="gate-card__err" id="welcomeErr" hidden></p>' +
           '<button class="btn btn--flame" type="submit">' + esc(q.form_btn || 'לגילוי הנר') + '</button>' +
         '</form>' +
@@ -214,9 +241,13 @@
   }
 
   function resultBodyHTML(composed) {
+    var q = Q();
     var paras = (composed.parts || []).map(function (p) { return '<p>' + esc(p) + '</p>'; }).join('');
     return '<p class="quiz-result__kicker">הנר ' + esc(composed.ordinal) + '</p>' +
-      '<h1 class="quiz-result__h">' + esc(composed.headline) + '</h1>' +
+      '<h1 class="quiz-result__h" id="quiz-rh">' + esc(composed.headline) + '</h1>' +
+      '<div class="quiz-result__share-row">' +
+        '<button class="btn btn--share" type="button" id="quizShareTop">' + esc(q.share || 'שיתוף התוצאה') + '</button>' +
+      '</div>' +
       '<div class="quiz-result__body">' + paras + '</div>';
   }
 
@@ -224,12 +255,16 @@
     var q = Q();
     return '<section class="quiz quiz--result" aria-labelledby="quiz-rh">' +
       '<div class="quiz__in quiz__in--result">' +
-        '<div class="quiz-result" id="quiz-rh">' + resultBodyHTML(composed) + '</div>' +
+        '<div class="quiz-result">' + resultBodyHTML(composed) + '</div>' +
+        '<figure class="quiz-share-preview">' +
+          '<img id="quizSharePreview" alt="כרטיס השיתוף של התוצאה" width="1080" height="1080">' +
+          '<figcaption>כך ייראה הכרטיס שישותף</figcaption>' +
+        '</figure>' +
         '<div class="quiz-actions">' +
           '<a class="btn btn--flame" id="quizToCandle" href="#night-' + composed.candle + '">' + esc(q.to_candle || 'ללימוד של הנר הזה') + '</a>' +
+          '<button class="btn btn--share" type="button" id="quizShare">' + esc(q.share || 'שיתוף התוצאה') + '</button>' +
+          '<button class="btn btn--card" type="button" id="quizCard">' + esc(q.download_card || 'הורדת כרטיס') + '</button>' +
           '<a class="btn btn--ghost" id="quizToSite" href="#">' + esc(q.to_site || 'לכל שמונת הנרות') + '</a>' +
-          '<button class="btn btn--line" type="button" id="quizShare">' + esc(q.share || 'שיתוף התוצאה') + '</button>' +
-          '<button class="btn btn--line" type="button" id="quizCard">' + esc(q.download_card || 'הורדת כרטיס') + '</button>' +
         '</div>' +
         '<canvas id="quizShareCanvas" width="1080" height="1080" hidden></canvas>' +
       '</div></section>';
@@ -259,9 +294,26 @@
           paint();
         });
       });
+      var art = el.querySelector('.quiz-intro__art');
+      if (art && w.__hanukkah && w.__hanukkah.bindMenorah) w.__hanukkah.bindMenorah(art);
       var st = $('#quizStart', el);
       if (st) st.addEventListener('click', function () {
-        if (!state.gender) return;
+        if (!state.gender) {
+          var box = el.querySelector('.quiz-gender');
+          if (box) {
+            box.classList.add('is-needed');
+            var hint = box.querySelector('.quiz-gender__hint');
+            if (!hint) {
+              hint = document.createElement('p');
+              hint.className = 'quiz-gender__hint';
+              hint.setAttribute('role', 'status');
+              hint.textContent = 'בחרו לשון פנייה, ואז אפשר להתחיל.';
+              box.appendChild(hint);
+            }
+            if (box.scrollIntoView) box.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+          }
+          return;
+        }
         state.step = 'q';
         state.qi = 0;
         state.answers = [];
@@ -307,7 +359,7 @@
         var light = form.light.value.trim();
         var consent = !!form.consent.checked;
         var msg = '';
-        if (!nm) msg = 'כתבו את השם הפרטי, כדי שנוכל לפנות אליכם.';
+        if (!nm) msg = G('כתבו את השם הפרטי, כדי שנוכל לפנות {g:אליך|אליך|אליכם}.', state.gender);
         else if (!phone && !email) msg = 'השאירו טלפון או דוא״ל, אחד מהשניים.';
         else if (phone && !validPhone(phone)) msg = 'בדקו את מספר הטלפון, ונסו שוב.';
         else if (email && !validEmail(email)) msg = 'בדקו את כתובת הדוא״ל, ונסו שוב.';
@@ -330,10 +382,17 @@
       var a2 = $('#quizToSite', el);
       if (a1) a1.addEventListener('click', function (e) { e.preventDefault(); go('#night-' + state.candle); });
       if (a2) a2.addEventListener('click', function (e) { e.preventDefault(); go('#'); });
-      var sh = $('#quizShare', el);
-      if (sh) sh.addEventListener('click', function () { shareResult(state.composed, false); });
+      var onShare = function () { shareResult(state.composed, false); };
+      ['quizShare', 'quizShareTop'].forEach(function (id) {
+        var sh = $('#' + id, el);
+        if (sh) sh.addEventListener('click', onShare);
+      });
       var dl = $('#quizCard', el);
       if (dl) dl.addEventListener('click', function () { shareResult(state.composed, true); });
+      drawShareCard(state.composed, function (canvas) {
+        var img = $('#quizSharePreview', el);
+        if (img) img.src = canvas.toDataURL('image/png');
+      });
     }
   }
 
@@ -373,7 +432,7 @@
     return SITE_ORIGIN + '/?utm_source=share';
   }
   function shareText(composed) {
-    return 'יצא לי הנר ' + composed.ordinal + ' – ' + composed.title + '. גלו איזה נר אתם:';
+    return composed.headline + '. גלו איזה נר אתם:';
   }
 
   function wrapLines(ctx, text, maxWidth, maxLines) {
@@ -523,7 +582,7 @@
     if (!profile || !profile.candle) return '';
     var quiz = Q();
     var composed = compose(profile, profile.answers || [], profile.candle, profile.gender, profile.birth_order);
-    var ata = you(profile.gender, 'אתה', 'את');
+    var ata = you(profile.gender, 'אתה', 'את', 'אתם');
     return '<aside class="home-ner" aria-label="הנר שלך">' +
       '<div class="home-ner__in">' +
         '<p class="home-ner__kicker">הנר שלך</p>' +
@@ -531,8 +590,8 @@
         '<p>' + esc((composed.parts && composed.parts[0]) || '') + '</p>' +
         '<div class="home-ner__act">' +
           '<a class="btn btn--flame" href="#night-' + profile.candle + '">' + esc(quiz.to_candle || 'ללימוד של הנר הזה') + '</a>' +
-          '<button class="btn btn--line" type="button" data-quiz-retake>' + esc(quiz.retake || 'לגלות שוב') + '</button>' +
-          '<button class="btn btn--line" type="button" data-quiz-share>' + esc(quiz.share || 'שיתוף') + '</button>' +
+          '<button class="btn btn--card" type="button" data-quiz-retake>' + esc(quiz.retake || 'לגלות שוב') + '</button>' +
+          '<button class="btn btn--share" type="button" data-quiz-share>' + esc(quiz.share || 'שיתוף התוצאה') + '</button>' +
         '</div>' +
       '</div></aside>';
   }
@@ -552,6 +611,7 @@
 
   w.HanukkahQuiz = {
     SITE_ORIGIN: SITE_ORIGIN,
+    applyGender: applyGender,
     startGate: startGate,
     setDeps: setDeps,
     retake: retake,
