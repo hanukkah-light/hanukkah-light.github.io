@@ -302,106 +302,93 @@
   function validPhone(s) { return String(s || '').replace(/\D/g, '').length >= 9; }
   function validEmail(s) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s || '').trim()); }
 
-  function gateHTML() {
-    return '<div class="gate" id="gate">' +
-      '<div class="gate__fade" aria-hidden="true"></div>' +
-      '<button class="btn btn--flame" type="button" id="gateOpen">להמשך הלימוד</button>' +
-      '<form class="gate-card" id="gateForm" hidden novalidate>' +
-        '<h2>נשמח להכיר, ונמשיך יחד</h2>' +
-        '<p class="gate-card__lead">כתבו את השם שלכם, ונפתח את המשך הלימוד.</p>' +
-        '<label class="field">שם פרטי <span class="req">*</span>' +
-          '<input name="name" type="text" required autocomplete="given-name" maxlength="80">' +
-        '</label>' +
-        '<div class="field-row">' +
-          '<label class="field">טלפון' +
-            '<input name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="20">' +
+  function welcomeHTML() {
+    var w = C.welcome || {};
+    var q = w.question || 'מתי בפעם האחרונה גילית את האור שבך?';
+    var invite = w.invite || '';
+    return '<section class="welcome" aria-labelledby="w-q">' +
+      '<div class="welcome__in">' +
+        '<p class="welcome__brand"><svg class="brand__flame" viewBox="0 0 20 28" aria-hidden="true"><path d="M10 1C14 7 17 11 17 17a7 7 0 0 1-14 0c0-4 2-6 3-8 1 3 2 4 3 4 0-4 0-8 1-12z" fill="currentColor"/></svg>הפנימיות של חנוכה</p>' +
+        '<h1 id="w-q">' + esc(q) + '</h1>' +
+        (invite ? '<p class="welcome__invite">' + esc(invite) + '</p>' : '') +
+        openingHTML() +
+        '<form class="welcome__form" id="welcomeForm" novalidate>' +
+            '<label class="field">שם פרטי <span class="req">*</span>' +
+            '<input name="name" type="text" required autocomplete="given-name" maxlength="80">' +
           '</label>' +
-          '<label class="field">דוא״ל' +
-            '<input name="email" type="email" autocomplete="email" maxlength="120" dir="ltr">' +
+          '<div class="field-row">' +
+            '<label class="field">טלפון' +
+              '<input name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="20">' +
+            '</label>' +
+            '<label class="field">דוא״ל' +
+              '<input name="email" type="email" autocomplete="email" maxlength="120" dir="ltr">' +
+            '</label>' +
+          '</div>' +
+          '<p class="gate-card__hint">מספיק טלפון או דוא״ל — אחד מהשניים.</p>' +
+          '<label class="field">מה העיסוק שלך? <span class="opt">(רשות)</span>' +
+            '<input name="occupation" type="text" maxlength="120" autocomplete="organization-title">' +
           '</label>' +
-        '</div>' +
-        '<p class="gate-card__hint">מספיק טלפון או דוא״ל — אחד מהשניים.</p>' +
-        '<label class="field">מה העיסוק שלך? <span class="opt">(רשות)</span>' +
-          '<input name="occupation" type="text" maxlength="120" autocomplete="organization-title">' +
-        '</label>' +
-        '<label class="field">איזה אור אתם מפיצים בעולם, סביבכם? <span class="opt">(רשות)</span>' +
-          '<input name="light" type="text" maxlength="160">' +
-        '</label>' +
-        '<label class="check"><input name="consent" type="checkbox"><span>אשמח לקבל עדכונים, לימודים ותכנים נוספים</span></label>' +
-        '<p class="gate-card__legal">הפרטים נשמרים אצלנו רק לצורך הלימוד והתכנים שביקשתם לקבל, ואינם מועברים הלאה.</p>' +
-        '<p class="gate-card__err" id="gateErr" hidden></p>' +
-        '<button class="btn btn--flame" type="submit">להמשך הלימוד</button>' +
-      '</form>' +
-    '</div>';
+          '<label class="field">איזה אור אתם מפיצים בעולם, סביבכם? <span class="opt">(רשות)</span>' +
+            '<input name="light" type="text" maxlength="160">' +
+          '</label>' +
+          '<label class="check"><input name="consent" type="checkbox"><span>אשמח לקבל עדכונים, לימודים ותכנים נוספים</span></label>' +
+          '<p class="gate-card__legal">הפרטים נשמרים אצלנו רק לצורך הלימוד והתכנים שביקשתם לקבל, ואינם מועברים הלאה.</p>' +
+          '<p class="gate-card__err" id="welcomeErr" hidden></p>' +
+          '<button class="btn btn--flame" type="submit">כניסה ללימוד</button>' +
+        '</form>' +
+      '</div></section>';
   }
 
-  function unlockNight(animate) {
-    var gate = $('#gate'), rest = $('#nightRest');
-    if (gate) {
-      gate.classList.add('gate--done');
-      gate.hidden = true;
-    }
-    if (rest) {
-      rest.hidden = false;
-      if (animate) {
-        rest.classList.add('night-rest--reveal');
-        try { rest.scrollIntoView({ block: 'start', behavior: 'smooth' }); } catch (e) {}
-      }
-    }
-    var nhead = document.querySelector('.nhead__in');
-    if (nhead) {
-      var h1 = nhead.querySelector('h1');
-      var prevH = $('.nhead__hello', nhead);
-      var prevL = $('.nhead__light', nhead);
-      if (prevL) prevL.remove();
-      if (prevH) prevH.remove();
-      if (h1) h1.insertAdjacentHTML('beforebegin', greetingHTML());
-    }
-    var work = document.querySelector('.work');
-    if (work && !$('.work__personal', work)) {
-      var note = occupationNote();
-      if (note) work.insertAdjacentHTML('beforeend', note);
-    }
-  }
-
-  function bindGate(n) {
-    if (getProfile()) { unlockNight(false); return; }
-    var open = $('#gateOpen'), form = $('#gateForm'), err = $('#gateErr');
-    if (!open || !form) return;
-    open.addEventListener('click', function () {
-      form.hidden = false;
-      open.hidden = true;
-      var gate = $('#gate'); if (gate) gate.classList.add('gate--open');
-      var name = form.querySelector('[name="name"]');
-      if (name) setTimeout(function () { name.focus(); }, 40);
-      try { form.scrollIntoView({ block: 'start', behavior: 'smooth' }); } catch (e) {}
-    });
+  function showWelcome() {
+    document.body.classList.add('is-locked');
+    var el = $('#welcome');
+    el.hidden = false;
+    el.innerHTML = welcomeHTML();
+    var form = $('#welcomeForm'), err = $('#welcomeErr');
+    if (!form) return;
+    var name = form.querySelector('[name="name"]');
+    if (name) setTimeout(function () { try { name.focus(); } catch (e) {} }, 80);
     form.addEventListener('submit', function (e) {
       e.preventDefault();
-      var name = form.name.value.trim();
+      var nm = form.name.value.trim();
       var phone = form.phone.value.trim();
       var email = form.email.value.trim();
       var occupation = form.occupation.value.trim();
       var light = form.light.value.trim();
       var consent = !!form.consent.checked;
       var msg = '';
-      if (!name) msg = 'כתבו את השם הפרטי, כדי שנוכל לפנות אליכם.';
+      if (!nm) msg = 'כתבו את השם הפרטי, כדי שנוכל לפנות אליכם.';
       else if (!phone && !email) msg = 'השאירו טלפון או דוא״ל, אחד מהשניים.';
       else if (phone && !validPhone(phone)) msg = 'בדקו את מספר הטלפון, ונסו שוב.';
       else if (email && !validEmail(email)) msg = 'בדקו את כתובת הדוא״ל, ונסו שוב.';
-      if (msg) {
-        err.hidden = false; err.textContent = msg; return;
-      }
+      if (msg) { err.hidden = false; err.textContent = msg; return; }
       err.hidden = true;
-      var profile = { name: name, phone: phone, email: email, occupation: occupation, light: light, consent: consent, ts: new Date().toISOString() };
+      var profile = { name: nm, phone: phone, email: email, occupation: occupation, light: light, consent: consent, ts: new Date().toISOString() };
       saveProfile(profile);
       try {
+        var night = (T && T.night) ? T.night : '';
         postEvent(eventPayload('signup', {
-          name: name, phone: phone, email: email, occupation: occupation, light: light, consent: consent, night: n
+          name: nm, phone: phone, email: email, occupation: occupation, light: light, consent: consent, night: night
         }));
       } catch (err2) {}
-      unlockNight(true);
+      enterSite();
     });
+  }
+
+  var siteStarted = false;
+  function enterSite() {
+    document.body.classList.remove('is-locked');
+    var el = $('#welcome');
+    if (el) { el.hidden = true; el.innerHTML = ''; }
+    if (siteStarted) { route(); return; }
+    siteStarted = true;
+    var foot = $('#siteFoot'); foot.innerHTML = footerHTML(); foot.hidden = false;
+    buildPlaylist();
+    syncBooksNav();
+    window.addEventListener('hashchange', route);
+    route();
+    var warm = function () { if (!ytLoading) loadYT(); };
+    if ('requestIdleCallback' in window) requestIdleCallback(function () { setTimeout(warm, 2500); }); else setTimeout(warm, 4000);
   }
 
   /* ---------------- in-page book reader ---------------- */
@@ -582,6 +569,42 @@
     return '<blockquote class="hero__opening"><p>' + body + '</p><p class="hero__opening-end">' + esc(last) + '</p></blockquote>';
   }
 
+  function visibleBooks() {
+    return (C.books || []).filter(function (b) { return b && String(b.url || '').trim(); });
+  }
+  function booksHTML() {
+    var books = visibleBooks();
+    if (!books.length) return '';
+    var items = books.map(function (b) {
+      var title = b.title || b.label || b.author || 'ספר';
+      var cover = b.cover
+        ? '<img class="book-card__cover" src="' + esc(b.cover) + '" alt="' + esc(title) + '">'
+        : '<div class="book-card__cover book-card__cover--empty" aria-hidden="true"></div>';
+      return '<article class="book-card">' +
+        cover +
+        '<div class="book-card__body">' +
+          (b.label ? '<p class="overline">' + esc(b.label) + '</p>' : '') +
+          '<h3>' + esc(title) + '</h3>' +
+          (b.author ? '<p class="book-card__author">' + esc(b.author) + '</p>' : '') +
+          '<a class="btn btn--flame" href="' + esc(b.url) + '" target="_blank" rel="noopener">' + esc(b.button || 'לרכישה') + '</a>' +
+        '</div></article>';
+    }).join('');
+    return '<section class="section paper" id="sfarim" aria-labelledby="h-books"><div class="wrap split">' +
+      '<div class="split__side"><p class="overline">להמשך הלימוד</p><h2 id="h-books">ספרים נוספים</h2></div>' +
+      '<div class="book-grid">' + items + '</div></div></section>';
+  }
+  function booksView() {
+    var html = booksHTML();
+    if (!html) return homeView();
+    return '<section class="nhead dark" aria-labelledby="b-title"><div class="wrap" style="padding:3rem 0 2.4rem">' +
+      '<p class="overline">להמשך הלימוד</p><h1 id="b-title" tabindex="-1" class="display">ספרים נוספים</h1></div></section>' +
+      html;
+  }
+  function syncBooksNav() {
+    var a = document.getElementById('navBooks');
+    if (a) a.hidden = visibleBooks().length === 0;
+  }
+
   function homeView() {
     var lit = T.phase === 'during' ? T.night : T.phase === 'after' ? 8 : 0;
     var ded = C.dedication || {};
@@ -637,6 +660,7 @@
         '<div class="poem-cards">' + poems + '</div>' +
       '</div></section>' +
 
+      booksHTML() +
       hakdashotHTML();
   }
   function stripIdf(s) { return String(s || '').split(/[.,]/)[0].replace(/^ו/, '') || ''; }
@@ -651,11 +675,23 @@
       '<h2 id="h-hakd">הקדשות</h2><div class="hakd">' + blocks + '</div></div></section>';
   }
 
+  function willPassageHTML(n) {
+    var list = (C.aviad_will && C.aviad_will.passages) || [];
+    var p = list[n - 1];
+    if (!p || !p.text) return '';
+    return '<aside class="will-pass" aria-labelledby="wp-' + n + '">' +
+      '<a class="will-pass__media" href="#aviad"><img src="img/aviad.jpg" width="72" height="72" alt="שלמה אביעד ניימן הי״ד"></a>' +
+      '<div class="will-pass__body">' +
+        '<p class="will-pass__label" id="wp-' + n + '">מצוואתו של אביעד</p>' +
+        (p.heading ? '<h2 class="will-pass__h">' + esc(p.heading) + '</h2>' : '') +
+        '<blockquote>' + esc(txt(p.text)) + '</blockquote>' +
+        '<a class="will-pass__more" href="#aviad">הצוואה המלאה</a>' +
+      '</div></aside>';
+  }
+
   function nightView(n) {
     var night = C.nights[n - 1], d = nightDate(n), note = nightNote(d);
     var isTonight = T.phase === 'during' && T.night === n;
-    var unlocked = !!getProfile();
-    var parts = teaserParas(night.body);
     var story = night.story && (night.story.text || night.story.title) ?
       '<aside class="story" aria-labelledby="st-' + n + '"><p class="story__label">סיפור</p><h2 id="st-' + n + '">' + esc(night.story.title || '') + '</h2>' + P(night.story.text) + '</aside>' : '';
     var poem = night.poem_ref ? poemHTML(findPoem(night.poem_ref), true) : '';
@@ -663,12 +699,6 @@
       '<details class="relax"><summary>' + esc(night.guided_relaxation.title || 'הרפיה') + '</summary><div class="prose">' + P(night.guided_relaxation.paragraphs || night.guided_relaxation.text) + '</div></details>' : '';
     var prev = n > 1 ? '<a href="#night-' + (n - 1) + '"><small>→ נר ' + ORD[n - 2] + '</small><b>' + esc(C.nights[n - 2].title) + '</b></a>' : '<a href="#"><small>→ חזרה</small><b>לעמוד הראשי</b></a>';
     var next = n < 8 ? '<a class="next" href="#night-' + (n + 1) + '"><small>נר ' + ORD[n] + ' ←</small><b>' + esc(C.nights[n].title) + '</b></a>' : '<a class="next" href="#aviad"><small>לעילוי נשמת ←</small><b>הדרך שבה אביעד חי</b></a>';
-    var restBody = parts.rest.length ? '<div class="prose">' + P(parts.rest) + '</div>' : '';
-    var fullRest = restBody + story + poem +
-      (night.quote ? '<figure class="quote"><svg class="quote__orn" viewBox="0 0 46 14" aria-hidden="true"><path d="M0 7h17M29 7h17" stroke="currentColor" stroke-width="1"/><path d="M23 1c2.5 3 4 4.5 4 7a4 4 0 0 1-8 0c0-2.5 1.5-4 4-7z" fill="currentColor"/></svg><blockquote>' + esc(txt(night.quote)) + '</blockquote><figcaption>מתוך החוברת</figcaption></figure>' : '') +
-      (night.inner_work ? '<section class="work" aria-labelledby="w-' + n + '"><h2 id="w-' + n + '">' + flameIcon + 'עבודה פנימית להלילה</h2>' + P(night.inner_work) + (unlocked ? occupationNote() : '') + '</section>' : '') +
-      relax +
-      (night.source_chapter ? '<p class="source">מקורות בחוברת: ' + esc(txt(night.source_chapter)) + '</p>' : '');
     var pdfBtn = n === 8 ? '<a class="btn btn--line" href="' + BOOK_PDF + '" download="הפנימיות-של-חנוכה.pdf">הורדת החוברת המלאה (PDF)</a>' +
       '<a class="btn btn--line" href="#sefer">קריאה באתר</a>' : '';
 
@@ -677,15 +707,19 @@
         '<div class="nhead__art">' + menorahSVG(n, { interactive: true, selected: n }) + '</div>' +
         '<p class="nhead__crumbs"><a href="#nights">שמונת הנרות</a> / נר ' + ORD[n - 1] + '</p>' +
         '<p class="nhead__count">' + (isTonight ? 'הלילה · ' : '') + 'נר ' + ORD[n - 1] + '</p>' +
-        (unlocked ? greetingHTML() : '') +
+        greetingHTML() +
         '<h1 id="n-title" tabindex="-1">' + esc(night.title) + '</h1>' +
         '<p class="nhead__date"><span>' + esc(longDate(d, true)) + ' בערב</span>' + (note ? '<span class="note">' + esc(note) + '</span>' : '') + '</p>' +
         '<p class="nhead__theme">' + esc(txt(night.candle_theme)) + '</p>' +
       '</div></section>' +
       '<article class="nbody paper"><div class="wrap"><div class="col">' +
-        '<div class="teaser' + (unlocked ? '' : ' teaser--locked') + '"><div class="prose">' + P(parts.teaser) + '</div>' +
-        (unlocked ? '' : gateHTML()) + '</div>' +
-        '<div class="night-rest" id="nightRest"' + (unlocked ? '' : ' hidden') + '>' + fullRest + '</div>' +
+        '<div class="prose">' + P(night.body) + '</div>' +
+        story + poem +
+        (night.quote ? '<figure class="quote"><svg class="quote__orn" viewBox="0 0 46 14" aria-hidden="true"><path d="M0 7h17M29 7h17" stroke="currentColor" stroke-width="1"/><path d="M23 1c2.5 3 4 4.5 4 7a4 4 0 0 1-8 0c0-2.5 1.5-4 4-7z" fill="currentColor"/></svg><blockquote>' + esc(txt(night.quote)) + '</blockquote><figcaption>מתוך החוברת</figcaption></figure>' : '') +
+        willPassageHTML(n) +
+        (night.inner_work ? '<section class="work" aria-labelledby="w-' + n + '"><h2 id="w-' + n + '">' + flameIcon + 'עבודה פנימית להלילה</h2>' + P(night.inner_work) + occupationNote() + '</section>' : '') +
+        relax +
+        (night.source_chapter ? '<p class="source">מקורות בחוברת: ' + esc(txt(night.source_chapter)) + '</p>' : '') +
         '<div class="nactions"><button class="btn btn--line" type="button" data-share="' + n + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>שיתוף הלימוד</button>' +
         pdfBtn +
         '<div class="share-pop" id="sharePop"><a class="btn btn--line" target="_blank" rel="noopener" data-wa>וואטסאפ</a><button class="btn btn--line" type="button" data-copy>העתקת קישור</button></div></div>' +
@@ -743,12 +777,14 @@
   /* ---------------- router ---------------- */
   var lastRoute = null;
   function route() {
+    if (document.body.classList.contains('is-locked')) return;
     var h = location.hash.replace(/^#/, '');
     var view = $('#view'), m, scrollTo = null, key;
     if ((m = /^night-([1-8])$/.exec(h))) { key = 'n' + m[1]; }
     else if (h === 'aviad') key = 'aviad';
     else if (h === 'shirim') key = 'shirim';
     else if (h === 'sefer') key = 'sefer';
+    else if (h === 'sfarim') key = 'sfarim';
     else { key = 'home'; if (h) scrollTo = h; }
 
     if (key !== lastRoute) {
@@ -758,7 +794,8 @@
       else if (key === 'aviad') { view.innerHTML = aviadView(); document.title = 'לעילוי נשמת שלמה אביעד ניימן הי״ד · הפנימיות של חנוכה'; }
       else if (key === 'shirim') { view.innerHTML = poemsView(); document.title = 'שירי החוברת · הפנימיות של חנוכה'; }
       else if (key === 'sefer') { view.innerHTML = seferView(); document.title = 'החוברת המלאה · הפנימיות של חנוכה'; bindReader(); }
-      else { var n = +key.slice(1); view.innerHTML = nightView(n); document.title = 'נר ' + ORD[n - 1] + ': ' + C.nights[n - 1].title + ' · הפנימיות של חנוכה'; bindShare(n); bindGate(n); }
+      else if (key === 'sfarim') { view.innerHTML = booksView(); document.title = 'ספרים נוספים · הפנימיות של חנוכה'; }
+      else { var n = +key.slice(1); view.innerHTML = nightView(n); document.title = 'נר ' + ORD[n - 1] + ': ' + C.nights[n - 1].title + ' · הפנימיות של חנוכה'; bindShare(n); }
       bindMenorah(view);
       if (!scrollTo) {
         window.scrollTo(0, 0);
@@ -773,7 +810,7 @@
     }
     document.querySelectorAll('.nav a').forEach(function (a) {
       var t = a.getAttribute('href').slice(1);
-      if ((t === 'aviad' && key === 'aviad') || (t === 'shirim' && key === 'shirim') || (t === 'sefer' && key === 'sefer') || (t === 'nights' && key[0] === 'n' && key !== 'home')) a.setAttribute('aria-current', 'page');
+      if ((t === 'aviad' && key === 'aviad') || (t === 'shirim' && key === 'shirim') || (t === 'sefer' && key === 'sefer') || (t === 'sfarim' && key === 'sfarim') || (t === 'nights' && key[0] === 'n' && key !== 'home')) a.setAttribute('aria-current', 'page');
       else a.removeAttribute('aria-current');
     });
     closeMenu();
@@ -920,14 +957,10 @@
     if (!C || !C.nights || !C.nights.length) { $('#loading').textContent = 'שגיאה בטעינת התוכן'; return; }
     T = timeState();
     $('#loading').remove();
-    var foot = $('#siteFoot'); foot.innerHTML = footerHTML(); foot.hidden = false;
-    buildPlaylist();
     trackVisit();
-    window.addEventListener('hashchange', route);
-    route();
-    // warm the YouTube API when idle so the first tap on play starts instantly (mobile gesture rules)
-    var warm = function () { if (!ytLoading) loadYT(); };
-    if ('requestIdleCallback' in window) requestIdleCallback(function () { setTimeout(warm, 2500); }); else setTimeout(warm, 4000);
+    syncBooksNav();
+    if (!getProfile()) showWelcome();
+    else enterSite();
   }
   function fallback() {
     if (window.CONTENT) return start(window.CONTENT);
