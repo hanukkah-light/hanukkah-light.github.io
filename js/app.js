@@ -7,6 +7,7 @@
   var NEW_NIGHT_HOUR = 16;
   var BLOCKED_SONGS = ['NoHp2Rq8sMI']; // too light for a memorial site
   var SIGNUP_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzfumjphlMHNMBXVnrXHPQhp0Pcbu9mTL4NlsWiePAmaKFsP8fvqjgW7tAejKOhfGg/exec';
+  var SITE_ORIGIN = (window.HanukkahQuiz && window.HanukkahQuiz.SITE_ORIGIN) || 'https://hanukkah-light.github.io';
   var BOOK_PDF = 'book/hanukkah-pnimiyut.pdf';
   var LS_PROFILE = 'hanukkah-signup';
   var LS_VISITOR = 'hanukkah-visitor';
@@ -339,40 +340,26 @@
       '</div></section>';
   }
 
+  function quizDeps() {
+    return {
+      content: C,
+      root: $('#welcome'),
+      getProfile: getProfile,
+      saveProfile: saveProfile,
+      postEvent: postEvent,
+      eventPayload: eventPayload,
+      enterSite: enterSite
+    };
+  }
   function showWelcome() {
     document.body.classList.add('is-locked');
+    if (window.HanukkahQuiz && window.HanukkahQuiz.startGate) {
+      window.HanukkahQuiz.startGate(quizDeps());
+      return;
+    }
     var el = $('#welcome');
     el.hidden = false;
-    el.innerHTML = welcomeHTML();
-    var form = $('#welcomeForm'), err = $('#welcomeErr');
-    if (!form) return;
-    var name = form.querySelector('[name="name"]');
-    if (name) setTimeout(function () { try { name.focus(); } catch (e) {} }, 80);
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-      var nm = form.name.value.trim();
-      var phone = form.phone.value.trim();
-      var email = form.email.value.trim();
-      var occupation = form.occupation.value.trim();
-      var light = form.light.value.trim();
-      var consent = !!form.consent.checked;
-      var msg = '';
-      if (!nm) msg = 'כתבו את השם הפרטי, כדי שנוכל לפנות אליכם.';
-      else if (!phone && !email) msg = 'השאירו טלפון או דוא״ל, אחד מהשניים.';
-      else if (phone && !validPhone(phone)) msg = 'בדקו את מספר הטלפון, ונסו שוב.';
-      else if (email && !validEmail(email)) msg = 'בדקו את כתובת הדוא״ל, ונסו שוב.';
-      if (msg) { err.hidden = false; err.textContent = msg; return; }
-      err.hidden = true;
-      var profile = { name: nm, phone: phone, email: email, occupation: occupation, light: light, consent: consent, ts: new Date().toISOString() };
-      saveProfile(profile);
-      try {
-        var night = (T && T.night) ? T.night : '';
-        postEvent(eventPayload('signup', {
-          name: nm, phone: phone, email: email, occupation: occupation, light: light, consent: consent, night: night
-        }));
-      } catch (err2) {}
-      enterSite();
-    });
+    el.innerHTML = '<p class="quiz__sub">לא ניתן לטעון את השער.</p>';
   }
 
   var siteStarted = false;
@@ -605,6 +592,28 @@
     if (a) a.hidden = visibleBooks().length === 0;
   }
 
+  function homeResultHTML() {
+    var p = getProfile();
+    if (window.HanukkahQuiz && window.HanukkahQuiz.homeCardHTML) {
+      if (p && p.candle) return window.HanukkahQuiz.homeCardHTML(p);
+      if (p && !p.candle) {
+        return '<aside class="home-ner"><div class="home-ner__in">' +
+          '<p class="home-ner__kicker">הנר שלך</p>' +
+          '<h2>שלום ' + esc(p.name) + ', גלו איזה נר אתם</h2>' +
+          '<p>בכל אחד דולק נר אחר. השאלון הקצר יגלה את שלכם.</p>' +
+          '<div class="home-ner__act"><button class="btn btn--flame" type="button" data-quiz-retake>גילוי הנר שלי</button></div>' +
+        '</div></aside>';
+      }
+    }
+    return '';
+  }
+  function bindHomeQuiz() {
+    if (window.HanukkahQuiz && window.HanukkahQuiz.bindHomeCard) {
+      window.HanukkahQuiz.bindHomeCard(document);
+      return;
+    }
+  }
+
   function homeView() {
     var lit = T.phase === 'during' ? T.night : T.phase === 'after' ? 8 : 0;
     var ded = C.dedication || {};
@@ -637,6 +646,7 @@
           '<p class="hero__cap">לחצו על נר כדי לפתוח את הלימוד שלו</p></div>' +
         '<div class="status">' + statusHTML() + '</div>' +
       '</div></section>' +
+      homeResultHTML() +
 
       '<section class="section paper intro" aria-labelledby="h-intro"><div class="wrap split">' +
         '<div class="split__side"><p class="overline">על הלימוד</p><h2 id="h-intro" class="sr">על הלימוד</h2></div>' +
@@ -675,9 +685,25 @@
       '<h2 id="h-hakd">הקדשות</h2><div class="hakd">' + blocks + '</div></div></section>';
   }
 
+
+  function aroundHTML(n) {
+    var night = C.nights[n - 1];
+    var text = night && night.light_around;
+    if (!text || (Array.isArray(text) && !text.length)) return '';
+    var mark = '<svg class="around__mark" viewBox="0 0 36 28" aria-hidden="true"><path d="M12 5C15 10 17 13 17 17.5a5.2 5.2 0 1 1-10.4 0c0-3.2 1.5-5 2.3-6.6.7 2.2 1.5 3.1 2.3 3.1 0-3 0-6.2.8-9z" fill="currentColor" opacity=".5"/><path d="M26 1C30 7 33 11 33 17a7 7 0 0 1-14 0c0-4 2-6 3-8 1 3 2 4 3 4 0-4 0-8 1-12z" fill="currentColor"/></svg>';
+    return '<aside class="around" aria-labelledby="ar-' + n + '">' +
+      mark +
+      '<p class="around__label" id="ar-' + n + '">איך לראות את האור שבסובבים אותי</p>' +
+      P(text) +
+    '</aside>';
+  }
+
   function willPassageHTML(n) {
     var list = (C.aviad_will && C.aviad_will.passages) || [];
-    var p = list[n - 1];
+    var p = null;
+    for (var i = 0; i < list.length; i++) {
+      if (list[i] && Number(list[i].night) === n && list[i].text) { p = list[i]; break; }
+    }
     if (!p || !p.text) return '';
     return '<aside class="will-pass" aria-labelledby="wp-' + n + '">' +
       '<a class="will-pass__media" href="#aviad"><img src="img/aviad.jpg" width="72" height="72" alt="שלמה אביעד ניימן הי״ד"></a>' +
@@ -713,11 +739,11 @@
         '<p class="nhead__theme">' + esc(txt(night.candle_theme)) + '</p>' +
       '</div></section>' +
       '<article class="nbody paper"><div class="wrap"><div class="col">' +
-        '<div class="prose">' + P(night.body) + '</div>' +
+        (night.light_in_me ? '<section class="night-sec" aria-labelledby="me-' + n + '"><h2 id="me-' + n + '">איך לגלות את האור שבי</h2><div class="prose">' + P(night.light_in_me) + '</div></section>' : (night.body ? '<div class="prose">' + P(night.body) + '</div>' : '')) +
+        aroundHTML(n) +
+        (night.practice ? '<section class="work" aria-labelledby="w-' + n + '"><h2 id="w-' + n + '">' + flameIcon + 'תרגול מעשי לחיי היום-יום</h2>' + P(night.practice) + occupationNote() + '</section>' : (night.inner_work ? '<section class="work" aria-labelledby="w-' + n + '"><h2 id="w-' + n + '">' + flameIcon + 'עבודה פנימית להלילה</h2>' + P(night.inner_work) + occupationNote() + '</section>' : '')) +
         story + poem +
-        (night.quote ? '<figure class="quote"><svg class="quote__orn" viewBox="0 0 46 14" aria-hidden="true"><path d="M0 7h17M29 7h17" stroke="currentColor" stroke-width="1"/><path d="M23 1c2.5 3 4 4.5 4 7a4 4 0 0 1-8 0c0-2.5 1.5-4 4-7z" fill="currentColor"/></svg><blockquote>' + esc(txt(night.quote)) + '</blockquote><figcaption>מתוך החוברת</figcaption></figure>' : '') +
         willPassageHTML(n) +
-        (night.inner_work ? '<section class="work" aria-labelledby="w-' + n + '"><h2 id="w-' + n + '">' + flameIcon + 'עבודה פנימית להלילה</h2>' + P(night.inner_work) + occupationNote() + '</section>' : '') +
         relax +
         (night.source_chapter ? '<p class="source">מקורות בחוברת: ' + esc(txt(night.source_chapter)) + '</p>' : '') +
         '<div class="nactions"><button class="btn btn--line" type="button" data-share="' + n + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>שיתוף הלימוד</button>' +
@@ -790,7 +816,7 @@
     if (key !== lastRoute) {
       unbindSefer();
       view.style.animation = 'none'; void view.offsetWidth; view.style.animation = '';
-      if (key === 'home') { view.innerHTML = homeView(); document.title = 'הפנימיות של חנוכה · לימוד לשמונת הנרות'; }
+      if (key === 'home') { view.innerHTML = homeView(); document.title = 'הפנימיות של חנוכה · לימוד לשמונת הנרות'; bindHomeQuiz(); }
       else if (key === 'aviad') { view.innerHTML = aviadView(); document.title = 'לעילוי נשמת שלמה אביעד ניימן הי״ד · הפנימיות של חנוכה'; }
       else if (key === 'shirim') { view.innerHTML = poemsView(); document.title = 'שירי החוברת · הפנימיות של חנוכה'; }
       else if (key === 'sefer') { view.innerHTML = seferView(); document.title = 'החוברת המלאה · הפנימיות של חנוכה'; bindReader(); }
@@ -817,7 +843,7 @@
   }
 
   /* ---------------- share ---------------- */
-  function baseURL() { return location.href.split('#')[0].split('?')[0]; }
+  function baseURL() { return SITE_ORIGIN + '/'; }
   function bindShare(n) {
     var btn = $('[data-share]'), pop = $('#sharePop');
     if (!btn) return;
@@ -959,6 +985,7 @@
     $('#loading').remove();
     trackVisit();
     syncBooksNav();
+    if (window.HanukkahQuiz && window.HanukkahQuiz.setDeps) window.HanukkahQuiz.setDeps(quizDeps());
     if (!getProfile()) showWelcome();
     else enterSite();
   }
@@ -973,5 +1000,5 @@
   else fetch('content.json', { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(start).catch(fallback);
 
   // expose for testing
-  window.__hanukkah = { timeState: function () { return T; }, computeFirstCandle: computeFirstCandle, getProfile: getProfile, saveProfile: saveProfile, eventPayload: eventPayload };
+  window.__hanukkah = { timeState: function () { return T; }, computeFirstCandle: computeFirstCandle, getProfile: getProfile, saveProfile: saveProfile, eventPayload: eventPayload, postEvent: postEvent, enterSite: enterSite, SITE_ORIGIN: SITE_ORIGIN };
 })();
