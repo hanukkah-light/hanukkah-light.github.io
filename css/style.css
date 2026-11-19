@@ -119,8 +119,8 @@ button{font:inherit;color:inherit}
 .menorah .wick{stroke:#3a2a1a;stroke-width:1.2;stroke-linecap:round}
 .menorah .fl{opacity:0;transition:opacity .9s ease}
 .menorah .lit .fl{opacity:1}
-.menorah .flame{transform-box:fill-box;transform-origin:50% 92%;animation:flicker 3.2s ease-in-out infinite}
-.menorah .glow{transform-box:fill-box;transform-origin:50% 60%;animation:glow 4.5s ease-in-out infinite}
+.menorah .flame{transform-box:fill-box;transform-origin:50% 92%}
+.menorah .glow{opacity:.9}
 .menorah .slot *{pointer-events:none}
 .menorah .hit{fill:transparent;cursor:pointer;pointer-events:all}
 .menorah .slot:focus{outline:none}
@@ -137,7 +137,6 @@ button{font:inherit;color:inherit}
   81%{transform:scale(.97,1.03) skewX(1.2deg);opacity:.93}
 }
 @keyframes glow{0%,100%{opacity:.8;transform:scale(1)}50%{opacity:1;transform:scale(1.1)}}
-.menorah .flame path:last-child{animation:flickerCore 2.1s ease-in-out infinite}
 @keyframes flickerCore{
   0%,100%{transform:scale(1,.98);opacity:.88}
   40%{transform:scale(1.08,1.05);opacity:1}
