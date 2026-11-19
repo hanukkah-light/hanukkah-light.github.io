@@ -121,7 +121,8 @@ button{font:inherit;color:inherit}
 .menorah .lit .fl{opacity:1}
 .menorah .flame{transform-box:fill-box;transform-origin:50% 92%;animation:flicker 3.2s ease-in-out infinite}
 .menorah .glow{transform-box:fill-box;transform-origin:50% 60%;animation:glow 4.5s ease-in-out infinite}
-.menorah .hit{fill:transparent;cursor:pointer}
+.menorah .slot *{pointer-events:none}
+.menorah .hit{fill:transparent;cursor:pointer;pointer-events:all}
 .menorah .slot:focus{outline:none}
 .menorah .slot:focus-visible .ring,.menorah .slot:hover .ring{opacity:1}
 .menorah .ring{opacity:0;fill:none;stroke:var(--gold-soft);stroke-width:1;stroke-dasharray:2 3;transition:opacity .2s}

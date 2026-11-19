@@ -137,7 +137,7 @@
     var inner = 'M' + x + ' ' + (y0 - 1) + ' C' + (x + iw) + ' ' + (y0 - ih * .3) + ' ' + (x + iw * .7) + ' ' + (y0 - ih * .8) + ' ' + x + ' ' + (y0 - ih) +
       ' C' + (x - iw * .7) + ' ' + (y0 - ih * .8) + ' ' + (x - iw) + ' ' + (y0 - ih * .3) + ' ' + x + ' ' + (y0 - 1) + 'Z';
     return '<g class="fl"><circle class="glow" cx="' + x + '" cy="' + (y0 - h * .45) + '" r="' + (30 * s) + '" fill="url(#glow' + uid + ')"/>' +
-      '<g class="flame"><path d="' + outer + '" fill="url(#fo' + uid + ')"/><path d="' + inner + '" fill="#fff6dc" opacity=".9"/></g></g>';
+      '<g class="flame"><path d="' + outer + '" fill="url(#fo' + uid + ')"/></g></g>';
   }
   function menorahSVG(lit, opts) {
     opts = opts || {};
@@ -533,12 +533,7 @@
         '<a class="btn btn--ghost" href="#nights">כל שמונת הנרות</a></div>';
     }
     if (T.phase === 'before') {
-      var big = T.daysTo === 0 ? 'הערב מדליקים את <b>הנר הראשון</b>' :
-        T.daysTo === 1 ? 'מחר בערב מדליקים את <b>הנר הראשון</b>' :
-        'עוד <b>' + T.daysTo + ' ימים</b> לנר הראשון';
-      var n1 = nightNote(f);
-      return '<p class="status__big">' + big + '</p>' +
-        '<p class="status__meta">נר ראשון: ' + esc(longDate(f, true)) + ' בערב' + (n1 ? '<br>' + esc(n1) : '') + '</p>' +
+      return '<p class="status__big">שמונה נרות, <b>שמונה לימודים</b></p>' +
         '<div class="status__actions"><a class="btn btn--flame" href="#night-1">לימוד הנר הראשון ' + arrowL + '</a>' +
         '<a class="btn btn--ghost" href="#nights">כל שמונת הנרות</a></div>';
     }
