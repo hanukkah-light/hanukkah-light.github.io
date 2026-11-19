@@ -164,24 +164,27 @@
       '</defs>';
     var gv = 'url(#gv' + id + ')', gh = 'url(#gh' + id + ')', gbase = 'url(#gbase' + id + ')', wax = 'url(#wax' + id + ')';
     var metal = '<ellipse cx="200" cy="336" rx="96" ry="8" fill="url(#gnd' + id + ')"/>';
-    // modern design: straight arm bar, short stems, braces to a central trunk
-    var barY = cupY + 22;
-    XS.forEach(function (x) {
-      metal += '<rect x="' + (x - 2.6) + '" y="' + (cupY + 1) + '" width="5.2" height="' + (barY - cupY) + '" rx="1.4" fill="' + gh + '"/>';
+    // curved branches sit behind the trunk so the shaft clearly holds them
+    [40, 80, 120, 160].forEach(function (r) {
+      var ry = r * 0.52;
+      metal += '<path fill="none" stroke="' + gv + '" stroke-width="8" stroke-linecap="round" d="M' + (200 - r) + ' ' + cupY + ' A' + r + ' ' + ry + ' 0 0 0 ' + (200 + r) + ' ' + cupY + '"/>';
+      metal += '<path fill="none" stroke="#f6e7b8" stroke-width="1.35" stroke-linecap="round" opacity=".42" d="M' + (200 - r + 1.2) + ' ' + (cupY - 1.7) + ' A' + (r - 1.2) + ' ' + (ry - 1.6) + ' 0 0 0 ' + (200 + r - 1.2) + ' ' + (cupY - 1.7) + '"/>';
     });
-    metal += '<path fill="none" stroke="' + gv + '" stroke-width="5" stroke-linecap="round" d="M60 ' + (barY + 3) + ' Q140 ' + (barY + 60) + ' 196 ' + (barY + 74) + '"/>';
-    metal += '<path fill="none" stroke="' + gv + '" stroke-width="5" stroke-linecap="round" d="M340 ' + (barY + 3) + ' Q260 ' + (barY + 60) + ' 204 ' + (barY + 74) + '"/>';
-    metal += '<rect x="30" y="' + (barY - 4) + '" width="340" height="9" rx="4.5" fill="' + gv + '"/>';
-    metal += '<rect x="34" y="' + (barY - 3) + '" width="332" height="1.6" rx=".8" fill="#f6e7b8" opacity=".45"/>';
-    var trunkTop = shY + 5, trunkBot = 300;
-    metal += '<rect x="194" y="' + trunkTop + '" width="12" height="' + (trunkBot - trunkTop) + '" rx="2" fill="' + gh + '"/>';
-    metal += '<rect x="198.4" y="' + trunkTop + '" width="2.4" height="' + (trunkBot - trunkTop) + '" fill="#f6e7b8" opacity=".3"/>';
-    metal += '<rect x="186" y="' + (barY - 7) + '" width="28" height="15" rx="3" fill="' + gbase + '"/>';
-    // flat modern base
-    metal += '<rect x="178" y="296" width="44" height="10" rx="2" fill="' + gbase + '"/>';
-    metal += '<rect x="128" y="306" width="144" height="16" rx="3" fill="' + gh + '"/>';
-    metal += '<rect x="132" y="307.5" width="136" height="1.6" rx=".8" fill="#f6e7b8" opacity=".4"/>';
-    metal += '<rect x="118" y="322" width="164" height="5" rx="2.5" fill="' + gbase + '"/>';
+    // solid tapered trunk: shamash cup down to the base
+    var trunkTop = shY + 5, trunkBot = 288;
+    metal += '<path fill="' + gh + '" d="M193 ' + trunkTop + ' h14 l3.6 ' + (trunkBot - trunkTop) + ' h-21.2 z"/>';
+    metal += '<path fill="#f6e7b8" opacity=".32" d="M198.1 ' + trunkTop + ' h2.5 l1.15 ' + (trunkBot - trunkTop) + ' h-3.4 z"/>';
+    [174, 216, 258].forEach(function (ky) {
+      metal += '<ellipse cx="200" cy="' + ky + '" rx="13.8" ry="5.3" fill="' + gbase + '"/>';
+      metal += '<ellipse cx="200" cy="' + (ky - 2.1) + '" rx="12.2" ry="2.3" fill="#f3e1a8" opacity=".38"/>';
+    });
+    // stepped base, planted on the ground
+    metal += '<path fill="' + gbase + '" d="M185 286 h30 l6 10 h-42 z"/>';
+    metal += '<path fill="' + gh + '" d="M156 296 h88 l11 14 H145 z"/>';
+    metal += '<rect x="145" y="308" width="110" height="3.2" rx="1" fill="#f3e1a8" opacity=".28"/>';
+    metal += '<path fill="' + gbase + '" d="M118 310 h164 l13 14 H105 z"/>';
+    metal += '<rect x="105" y="322" width="190" height="5.5" rx="2.6" fill="' + gh + '"/>';
+    metal += '<rect x="114" y="325.4" width="172" height="1.5" rx=".7" fill="#f6e7b8" opacity=".32"/>';
     // cups
     XS.concat([200]).forEach(function (x) {
       var y = x === 200 ? shY : cupY;
